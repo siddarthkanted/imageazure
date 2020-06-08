@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using System.Web.Http;
 
 namespace ImageWebApplication.Controllers
@@ -19,6 +20,24 @@ namespace ImageWebApplication.Controllers
             response.Content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
             return response;
         }
+
+        public async Task<HttpResponseMessage> GetUsingPushStreamAsync(string fileName, string fileType)
+        {
+            fileName = fileName + "." + fileType;
+            var response = new HttpResponseMessage();
+            var streamToDownload = await Image.GetFileStream(fileName).ConfigureAwait(false);
+            response.Content = Image.GetPushStreamContent(streamToDownload);
+
+            response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("inline")
+            {
+                FileName = fileName
+            };
+
+            response.Headers.Add("Access-Control-Allow-Origin", "*");
+
+            return response;
+        }
+
 
         //http://localhost:63087/Image/office-1356793_1280/png
         public HttpResponseMessage GetByFileName(string fileName, string fileType)
